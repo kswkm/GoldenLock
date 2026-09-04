@@ -1,0 +1,8 @@
+{
+  "availableBeds": 8,
+  "availableSpecialists": 3,
+  "hospitalSecret": 123456789,
+  "requiredBeds": 2,
+  "requiredSpecialists": 1,
+  "requestHash": 987654321
+}

@@ -27,6 +27,10 @@ contract EmergencyRouter is Ownable {
     mapping(uint256 => PatientRequest) public requests;
     uint256 public nextRequestId;
 
+    // 💡 에러를 해결하기 위해 추가된 생성자(Constructor) 부분입니다!
+    // 배포하는 사람(msg.sender)을 이 컨트랙트의 주인(Owner)으로 설정합니다.
+    constructor() Ownable(msg.sender) {}
+
     // 새로운 응급 환자 발생 시 (API/백엔드에서 호출)
     function createPatientRequest(uint256 _requiredBeds) external onlyOwner {
         requests[nextRequestId] = PatientRequest({

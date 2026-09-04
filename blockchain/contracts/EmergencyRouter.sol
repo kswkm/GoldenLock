@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 interface IVerifier {
     function verifyProof(
         uint[2] calldata a,
-        uint[2][2] calldata b,
+        uint[2][2] calldata b, 
         uint[2] calldata c,
         uint[2] calldata input // [can_accept, required_beds]
     ) external view returns (bool);

@@ -1,0 +1,15 @@
+:root { --ink: #14213d; --blue: #1769aa; --sky: #eaf4ff; --line: #cbd8e6; --green: #157a4b; --red: #b42318; --paper: #f7fafc; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: Georgia, "Noto Serif KR", serif; }
+button, input, select { font: inherit; }
+button { border: 0; border-radius: 4px; cursor: pointer; padding: 10px 13px; background: var(--ink); color: white; font-weight: 700; }
+button.secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+input, select { width: 100%; padding: 9px; border: 1px solid var(--line); border-radius: 4px; background: white; }
+.shell { max-width: 1260px; margin: 0 auto; padding: 28px 22px 48px; }
+.mast { display: flex; justify-content: space-between; align-items: end; border-bottom: 2px solid var(--ink); padding-bottom: 16px; gap: 16px; }
+.mast h1 { margin: 0; font-size: 30px; letter-spacing: 0; } .mast p { margin: 5px 0 0; color: #50627a; }
+.status { font: 600 13px ui-monospace, monospace; padding: 7px 10px; border-radius: 99px; background: #ffe9e6; color: var(--red); white-space: nowrap; }.status.on { background: #e3f8ec; color: var(--green); }
+.tabs { display: flex; gap: 4px; margin: 22px 0 14px; } .tabs a { padding: 9px 13px; text-decoration: none; color: var(--ink); border-bottom: 2px solid transparent; }.tabs a.active { border-color: var(--blue); color: var(--blue); font-weight: 700; }
+.grid { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr); gap: 16px; }.panel { background: white; border: 1px solid var(--line); padding: 18px; border-radius: 6px; }.panel h2 { margin: 0 0 15px; font-size: 18px; }.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }.field { display: grid; gap: 5px; font-size: 13px; font-weight: 700; }.span { grid-column: span 2; }.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.event { margin-top: 16px; padding: 12px; min-height: 120px; background: #0d1b2a; color: #dce9f7; font: 12px/1.5 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }.result { border-left: 4px solid var(--blue); padding: 11px; background: var(--sky); margin-top: 14px; }.result strong { display: block; }.note { color: #50627a; font-size: 13px; margin: 8px 0 0; }
+@media (max-width: 720px) { .shell { padding: 18px 14px; }.mast { align-items: start; flex-direction: column; }.grid { grid-template-columns: 1fr; }.fields { grid-template-columns: 1fr; }.span { grid-column: auto; } }

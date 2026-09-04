@@ -123,4 +123,43 @@ describe("GoldenLock", () => {
         .requestLock(hospital.address, RESOURCE_ICU, ethers.keccak256(ethers.toUtf8Bytes("case-001")), ambulance.address)
     ).to.emit(goldenLock, "LockRequested");
   });
+
+  it("trusted relayer accepts a hospital-signed availability proof", async () => {
+    const nonce = await goldenLock.availabilityNonces(hospital.address);
+    const network = await ethers.provider.getNetwork();
+    const domain = {
+      name: "GoldenLock",
+      version: "1",
+      chainId: network.chainId,
+      verifyingContract: await goldenLock.getAddress(),
+    };
+    const types = {
+      Availability: [
+        { name: "hospital", type: "address" },
+        { name: "resourceCode", type: "uint256" },
+        { name: "isAvailable", type: "uint256" },
+        { name: "nonce", type: "uint256" },
+      ],
+    };
+    const signature = await hospital.signTypedData(domain, types, {
+      hospital: hospital.address,
+      resourceCode: RESOURCE_ICU,
+      isAvailable: 1,
+      nonce,
+    });
+
+    await goldenLock.connect(relayer).submitAvailabilityProofFor(
+      hospital.address,
+      RESOURCE_ICU,
+      1,
+      dummyProof.a,
+      dummyProof.b,
+      dummyProof.c,
+      nonce,
+      signature
+    );
+
+    expect(await goldenLock.availability(hospital.address, RESOURCE_ICU)).to.equal(true);
+    expect(await goldenLock.availabilityNonces(hospital.address)).to.equal(1);
+  });
 });

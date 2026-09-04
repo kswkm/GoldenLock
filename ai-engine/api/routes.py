@@ -13,7 +13,6 @@ import os
 import numpy as np
 import onnxruntime as ort
 
-from services.multimodal_fusion import build_input_tensor
 from services.resource_mapper import map_ktas_to_resource, to_zk_public_input
 from services.rule_based_fallback import rule_based_ktas
 
@@ -83,6 +82,8 @@ def predict_ktas(payload: KTASPredictRequest):
             source = "rule_based_fallback"
             warning = f"AI 모델 미탑재 -> 규칙 기반 폴백 사용 (근거: {fallback['reason']}). 학습된 모델 배포 후 재확인 필요."
         else:
+            from services.multimodal_fusion import build_input_tensor
+
             inputs = build_input_tensor(
                 vitals=payload.vitals.dict(),
                 symptom_text=payload.symptom_text,

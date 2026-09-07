@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>환자 중심 실시간 응급의료 매칭 AI</title>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_APP_KEY&autoload=false"></script>
+<style>
+  :root{
+    --red:#e63946;
+    --red-dark:#c1121f;
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --border:#e2e6ea;
+    --text:#1d2733;
+    --sub:#6b7684;
+    --green:#2a9d8f;
+    --amber:#f4a261;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    background:var(--red);
+    color:#fff;
+    padding:16px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 2px 6px rgba(0,0,0,.15);
+  }
+  header h1{font-size:20px;font-weight:700;}
+  header .timer{
+    font-size:16px;
+    background:rgba(255,255,255,.15);
+    padding:6px 14px;
+    border-radius:20px;
+    font-variant-numeric:tabular-nums;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:16px;
+    padding:16px;
+    height:calc(100vh - 64px);
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    overflow-y:auto;
+  }
+  .left-panel{display:flex;flex-direction:column;gap:16px;}
+  .section-title{
+    font-size:14px;
+    font-weight:700;
+    color:var(--red-dark);
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .section-title .badge{
+    font-size:11px;
+    background:var(--red);
+    color:#fff;
+    padding:2px 8px;
+    border-radius:10px;
+    font-weight:600;
+  }
+  .card{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px;
+  }
+  textarea{
+    width:100%;
+    min-height:70px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px;
+    font-size:14px;
+    resize:vertical;
+    font-family:inherit;
+  }
+  .btn-row{display:flex;gap:8px;margin-top:10px;}
+  button{
+    cursor:pointer;
+    border:none;
+    border-radius:8px;
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:600;
+    transition:.15s;
+  }
+  .btn-primary{background:var(--red);color:#fff;}
+  .btn-primary:hover{background:var(--red-dark);}
+  .btn-rec{background:#fff;color:var(--red);border:2px solid var(--red);}
+  .btn-rec.recording{background:var(--red);color:#fff;animation:pulse 1s infinite;}
+  .btn-secondary{background:#eef1f4;color:var(--text);}
+  .btn-secondary:hover{background:#dfe4e9;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(230,57,70,.5);}
+    70%{box-shadow:0 0 0 10px rgba(230,57,70,0);}
+    100%{box-shadow:0 0 0 0 rgba(230,57,70,0);}
+  }
+  .transcript-box{
+    font-size:13px;
+    color:var(--sub);
+    min-height:24px;
+    line-height:1.5;
+    white-space:pre-wrap;
+  }
+  .tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .tag{
+    background:#fdecee;
+    color:var(--red-dark);
+    padding:4px 10px;
+    border-radius:14px;
+    font-size:12px;
+    font-weight:600;
+  }
+  .tag.resource{background:#e6f4f3;color:var(--green);}
+  .severity{
+    display:inline-block;
+    margin-top:10px;
+    padding:5px 12px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:700;
+  }
+  .severity.high{background:#fdecee;color:var(--red-dark);}
+  .severity.mid{background:#fff3e6;color:#c76b1f;}
+  .severity.low{background:#eaf7ee;color:#1f8a4c;}
+  #map{
+    width:100%;
+    height:340px;
+    border-radius:10px;
+    background:#dfe4e9;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--sub);
+    font-size:13px;
+  }
+  .hospital-list{margin-top:14px;display:flex;flex-direction:column;gap:10px;}
+  .hospital-card{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .hospital-card:hover{border-color:var(--red);box-shadow:0 2px 8px rgba(230,57,70,.12);}
+  .hospital-card.selected{border-color:var(--red);background:#fff8f8;}
+  .hospital-rank{
+    width:28px;height:28px;border-radius:50%;
+    background:var(--red);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:13px;flex-shrink:0;margin-right:12px;
+  }
+  .hospital-main{flex:1;}
+  .hospital-name{font-size:14px;font-weight:700;}
+  .hospital-meta{font-size:12px;color:var(--sub);margin-top:2px;}
+  .hospital-right{text-align:right;flex-shrink:0;margin-left:10px;}
+  .accept-prob{font-size:18px;font-weight:800;}
+  .accept-prob.high{color:var(--green);}
+  .accept-prob.mid{color:var(--amber);}
+  .accept-prob.low{color:var(--red-dark);}
+  .accept-label{font-size:11px;color:var(--sub);}
+  .status-dot{
+    display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;
+  }
+  .status-dot.on{background:var(--green);}
+  .status-dot.off{background:#c9ccd1;}
+  .ws-status{font-size:12px;color:var(--sub);display:flex;align-items:center;margin-top:6px;}
+  .empty-state{
+    color:var(--sub);font-size:13px;text-align:center;padding:24px 0;
+  }
+  .footer-actions{
+    margin-top:14px;display:flex;justify-content:flex-end;gap:8px;
+  }
+  .toggle-row{
+    display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub);
+  }
+  select{
+    border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:13px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🚑 환자 중심 실시간 응급의료 매칭 AI</h1>
+  <div class="timer" id="decisionTimer">의사결정 경과 00:00</div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT PANEL: input, AI analysis, ranking list -->
+  <div class="panel left-panel">
+
+    <div>
+      <div class="section-title">음성/텍스트 입력 <span class="badge">Whisper + LLM</span></div>
+      <div class="card">
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-rec" id="recBtn" onclick="toggleRecording()">🎙️ 녹음 시작</button>
+          <button class="btn-secondary" id="mockBtn" onclick="loadMockTranscript()">샘플 문장 넣기</button>
+        </div>
+        <textarea id="transcriptInput" placeholder="예) 60대 남성, 의식 저하, 흉통 호소, 호흡곤란 있음. 심전도상 ST분절 상승 의심."></textarea>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="requestAIAnalysis()">AI 분석 실행</button>
+          <button class="btn-secondary" onclick="clearAll()">초기화</button>
+        </div>
+        <div class="ws-status" id="wsStatus">
+          <span class="status-dot off" id="wsDot"></span> 실시간 서버 연결 대기중
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">AI 판단 결과 <span class="badge">필요 의료자원</span></div>
+      <div class="card" id="analysisCard">
+        <div class="empty-state">아직 분석된 정보가 없습니다.</div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
+      <div class="section-title">병원 추천 순위 <span class="badge">Ranking Model</span></div>
+      <div class="card" style="flex:1;overflow-y:auto;">
+        <div class="toggle-row" style="margin-bottom:8px;">
+          정렬 기준
+          <select id="sortSelect" onchange="renderHospitalList()">
+            <option value="rank">종합 추천 순위</option>
+            <option value="accept">수용 가능성순</option>
+            <option value="distance">거리순</option>
+            <option value="eta">도착 예정시간순</option>
+          </select>
+        </div>
+        <div class="hospital-list" id="hospitalList">
+          <div class="empty-state">AI 분석 후 병원 순위가 표시됩니다.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL: map + selected hospital detail -->
+  <div class="panel">
+    <div class="section-title">실시간 병원 위치 지도 <span class="badge">Kakao Map</span></div>
+    <div id="map">지도를 표시하려면 상단 script의 YOUR_KAKAO_APP_KEY를 발급받은 키로 교체하세요.</div>
+
+    <div style="margin-top:20px;">
+      <div class="section-title">선택된 병원 상세 정보</div>
+      <div class="card" id="detailCard">
+        <div class="empty-state">병원을 선택하면 상세 정보가 표시됩니다.</div>
+      </div>
+      <div class="footer-actions">
+        <button class="btn-secondary" onclick="refreshRealtime()">🔄 실시간 정보 갱신</button>
+        <button class="btn-primary" id="dispatchBtn" onclick="dispatchToHospital()" disabled>이 병원으로 이송 확정</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   설정: 실제 백엔드 연결 시 아래 URL을 서버 주소로 교체하세요.
+   ========================================================= */
+const API_BASE = "http://localhost:8000/api";
+const WS_URL   = "ws://localhost:8000/ws/hospitals";
+const KAKAO_APP_KEY_SET = false; // 카카오 키를 head의 script에 넣었으면 true로 변경
+
+let state = {
+  transcript: "",
+  analysis: null,
+  hospitals: [],
+  selectedId: null,
+  startTime: null,
+  ws: null,
+};
+
+/* ---------------- 타이머: 의사결정 경과 시간 ---------------- */
+function startDecisionTimer(){
+  state.startTime = Date.now();
+  updateTimer();
+}
+function updateTimer(){
+  if(!state.startTime) return;
+  const sec = Math.floor((Date.now() - state.startTime)/1000);
+  const mm = String(Math.floor(sec/60)).padStart(2,'0');
+  const ss = String(sec%60).padStart(2,'0');
+  document.getElementById('decisionTimer').textContent = `의사결정 경과 ${mm}:${ss}`;
+}
+setInterval(updateTimer, 1000);
+
+/* ---------------- 1. 음성 녹음 (MediaRecorder -> Whisper API) ---------------- */
+let mediaRecorder, audioChunks = [];
+
+async function toggleRecording(){
+  const btn = document.getElementById('recBtn');
+  if(!mediaRecorder || mediaRecorder.state === 'inactive'){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = handleRecordingStop;
+      mediaRecorder.start();
+      btn.textContent = "⏹ 녹음 중지";
+      btn.classList.add('recording');
+      if(!state.startTime) startDecisionTimer();
+    }catch(err){
+      alert("마이크 접근에 실패했습니다. 브라우저 권한을 확인하세요.\n" + err.message);
+    }
+  } else {
+    mediaRecorder.stop();
+    btn.textContent = "🎙️ 녹음 시작";
+    btn.classList.remove('recording');
+  }
+}
+
+async function handleRecordingStop(){
+  const blob = new Blob(audioChunks, { type: 'audio/webm' });
+  const formData = new FormData();
+  formData.append('audio', blob, 'recording.webm');
+
+  try{
+    const res = await fetch(`${API_BASE}/transcribe`, { method: 'POST', body: formData });
+    if(!res.ok) throw new Error('transcribe failed');
+    const data = await res.json();
+    document.getElementById('transcriptInput').value = data.text || "";
+  }catch(err){
+    console.warn("백엔드 미연결 - 데모 텍스트로 대체합니다.", err);
+    loadMockTranscript();
+  }
+}
+
+function loadMockTranscript(){
+  document.getElementById('transcriptInput').value =
+    "60대 남성, 의식 저하, 흉통 호소, 호흡곤란 있음. 심전도상 ST분절 상승 의심. 산소포화도 88%.";
+  if(!state.startTime) startDecisionTimer();
+}
+
+function clearAll(){
+  document.getElementById('transcriptInput').value = "";
+  document.getElementById('analysisCard').innerHTML = '<div class="empty-state">아직 분석된 정보가 없습니다.</div>';
+  document.getElementById('hospitalList').innerHTML = '<div class="empty-state">AI 분석 후 병원 순위가 표시됩니다.</div>';
+  document.getElementById('detailCard').innerHTML = '<div class="empty-state">병원을 선택하면 상세 정보가 표시됩니다.</div>';
+  document.getElementById('dispatchBtn').disabled = true;
+  state = { transcript:"", analysis:null, hospitals:[], selectedId:null, startTime:null, ws: state.ws };
+  document.getElementById('decisionTimer').textContent = "의사결정 경과 00:00";
+}
+
+/* ---------------- 2. LLM 기반 필요 의료자원 판단 ---------------- */
+async function requestAIAnalysis(){
+  const text = document.getElementById('transcriptInput').value.trim();
+  if(!text){ alert("입력된 정보가 없습니다."); return; }
+  state.transcript = text;
+  if(!state.startTime) startDecisionTimer();
+
+  document.getElementById('analysisCard').innerHTML = '<div class="empty-state">AI 분석 중...</div>';
+
+  try{
+    const res = await fetch(`${API_BASE}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    if(!res.ok) throw new Error('analyze failed');
+    state.analysis = await res.json();
+  }catch(err){
+    console.warn("백엔드 미연결 - 목업 분석 결과 사용", err);
+    state.analysis = mockAnalysis(text);
+  }
+
+  renderAnalysis(state.analysis);
+  await fetchHospitalRanking();
+  connectWebSocket();
+}
+
+function mockAnalysis(text){
+  return {
+    severity: "high",
+    severity_label: "중증(응급)",
+    keywords: ["흉통", "호흡곤란", "의식저하", "ST분절 상승 의심"],
+    required_resources: ["응급실 병상", "심혈관중재실(Cath-lab)", "산소공급", "심장내과 전문의"],
+  };
+}
+
+function renderAnalysis(a){
+  const sevClass = a.severity === 'high' ? 'high' : (a.severity === 'mid' ? 'mid' : 'low');
+  document.getElementById('analysisCard').innerHTML = `
+    <div class="severity ${sevClass}">중증도: ${a.severity_label}</div>
+    <div class="tag-list">
+      ${a.keywords.map(k => `<span class="tag">${k}</span>`).join('')}
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--sub);">필요 의료자원</div>
+    <div class="tag-list">
+      ${a.required_resources.map(r => `<span class="tag resource">${r}</span>`).join('')}
+    </div>
+  `;
+}
+
+/* ---------------- 3. 병원 추천 순위 (Rule + Ranking Model) ---------------- */
+async function fetchHospitalRanking(){
+  document.getElementById('hospitalList').innerHTML = '<div class="empty-state">병원 순위 계산 중...</div>';
+  try{
+    const res = await fetch(`${API_BASE}/hospitals/rank`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        required_resources: state.analysis.required_resources,
+        severity: state.analysis.severity,
+        lat: 37.5665, lng: 126.9780
+      })
+    });
+    if(!res.ok) throw new Error('rank failed');
+    state.hospitals = await res.json();
+  }catch(err){
+    console.warn("백엔드 미연결 - 목업 병원 데이터 사용", err);
+    state.hospitals = mockHospitals();
+  }
+  renderHospitalList();
+  initOrUpdateMap();
+}
+
+function mockHospitals(){
+  return [
+    { id:1, name:"서울대학교병원 권역응급의료센터", distance_km:2.1, eta_min:6, accept_prob:0.91, available_beds:3, lat:37.5798, lng:126.9990, specialties:["심혈관중재실","응급실"] },
+    { id:2, name:"세브란스병원 응급의료센터",           distance_km:4.3, eta_min:11, accept_prob:0.74, available_beds:1, lat:37.5623, lng:126.9408, specialties:["응급실","심장내과"] },
+    { id:3, name:"삼성서울병원 응급의료센터",           distance_km:6.8, eta_min:16, accept_prob:0.55, available_beds:0, lat:37.4881, lng:127.0857, specialties:["응급실"] },
+    { id:4, name:"고려대학교안암병원 응급실",            distance_km:5.2, eta_min:13, accept_prob:0.38, available_beds:2, lat:37.5869, lng:127.0257, specialties:["응급실","산소공급"] },
+  ];
+}
+
+function scoreRank(h){
+  // 종합 추천 점수: 수용가능성, 거리, ETA 가중합 (실제로는 LightGBM Ranker 결과로 대체)
+  return h.accept_prob*0.5 + (1/(h.distance_km+1))*0.3 + (1/(h.eta_min+1))*0.2;
+}
+
+function renderHospitalList(){
+  const list = [...state.hospitals];
+  const sortBy = document.getElementById('sortSelect').value;
+  if(sortBy === 'rank') list.sort((a,b) => scoreRank(b)-scoreRank(a));
+  if(sortBy === 'accept') list.sort((a,b) => b.accept_prob-a.accept_prob);
+  if(sortBy === 'distance') list.sort((a,b) => a.distance_km-b.distance_km);
+  if(sortBy === 'eta') list.sort((a,b) => a.eta_min-b.eta_min);
+
+  const container = document.getElementById('hospitalList');
+  if(list.length === 0){
+    container.innerHTML = '<div class="empty-state">추천 가능한 병원이 없습니다.</div>';
+    return;
+  }
+  container.innerHTML = list.map((h, idx) => {
+    const probClass = h.accept_prob >= 0.7 ? 'high' : (h.accept_prob >= 0.4 ? 'mid' : 'low');
+    const selected = state.selectedId === h.id ? 'selected' : '';
+    return `
+      <div class="hospital-card ${selected}" onclick="selectHospital(${h.id})">
+        <div class="hospital-rank">${idx+1}</div>
+        <div class="hospital-main">
+          <div class="hospital-name">${h.name}</div>
+          <div class="hospital-meta">거리 ${h.distance_km}km · 도착 예상 ${h.eta_min}분 · 가용병상 ${h.available_beds}개</div>
+        </div>
+        <div class="hospital-right">
+          <div class="accept-prob ${probClass}">${Math.round(h.accept_prob*100)}%</div>
+          <div class="accept-label">수용 가능성</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectHospital(id){
+  state.selectedId = id;
+  renderHospitalList();
+  const h = state.hospitals.find(x => x.id === id);
+  if(!h) return;
+  document.getElementById('detailCard').innerHTML = `
+    <div class="hospital-name" style="font-size:16px;">${h.name}</div>
+    <div class="hospital-meta" style="margin-top:6px;">거리 ${h.distance_km}km · 도착 예상 ${h.eta_min}분</div>
+    <div class="hospital-meta">가용 병상 ${h.available_beds}개</div>
+    <div class="tag-list">${h.specialties.map(s => `<span class="tag resource">${s}</span>`).join('')}</div>
+    <div style="margin-top:10px;font-weight:700;">수용 가능성 예측: <span class="accept-prob ${h.accept_prob>=0.7?'high':h.accept_prob>=0.4?'mid':'low'}">${Math.round(h.accept_prob*100)}%</span></div>
+  `;
+  document.getElementById('dispatchBtn').disabled = false;
+  highlightMarker(id);
+}
+
+async function dispatchToHospital(){
+  const h = state.hospitals.find(x => x.id === state.selectedId);
+  if(!h) return;
+  try{
+    await fetch(`${API_BASE}/dispatch`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ hospital_id: h.id })
+    });
+  }catch(err){
+    console.warn("백엔드 미연결 - 확정 요청 전송 생략", err);
+  }
+  const elapsed = document.getElementById('decisionTimer').textContent;
+  alert(`${h.name} 으로 이송이 확정되었습니다.\n${elapsed}`);
+}
+
+/* ---------------- 4. 실시간 데이터 (WebSocket) ---------------- */
+function connectWebSocket(){
+  if(state.ws) return;
+  try{
+    state.ws = new WebSocket(WS_URL);
+    state.ws.onopen = () => setWsStatus(true);
+    state.ws.onclose = () => { setWsStatus(false); state.ws = null; };
+    state.ws.onerror = () => { setWsStatus(false); };
+    state.ws.onmessage = (evt) => {
+      try{
+        const msg = JSON.parse(evt.data);
+        updateHospitalRealtime(msg);
+      }catch(e){ console.warn(e); }
+    };
+  }catch(err){
+    console.warn("WebSocket 연결 실패", err);
+    setWsStatus(false);
+  }
+}
+
+function setWsStatus(connected){
+  document.getElementById('wsDot').className = 'status-dot ' + (connected ? 'on' : 'off');
+  document.getElementById('wsStatus').innerHTML =
+    `<span class="status-dot ${connected?'on':'off'}"></span> ` +
+    (connected ? '실시간 서버 연결됨' : '실시간 서버 연결 대기중 (백엔드 미실행 시 목업 데이터로 동작)');
+}
+
+function updateHospitalRealtime(msg){
+  // 기대 형식: { hospital_id, available_beds, accept_prob }
+  const h = state.hospitals.find(x => x.id === msg.hospital_id);
+  if(!h) return;
+  if(msg.available_beds !== undefined) h.available_beds = msg.available_beds;
+  if(msg.accept_prob !== undefined) h.accept_prob = msg.accept_prob;
+  renderHospitalList();
+  if(state.selectedId === h.id) selectHospital(h.id);
+}
+
+function refreshRealtime(){
+  if(!state.analysis){ alert("먼저 AI 분석을 실행하세요."); return; }
+  fetchHospitalRanking();
+}
+
+/* ---------------- 5. 카카오 지도 ---------------- */
+let map, markers = [];
+
+function initOrUpdateMap(){
+  if(!KAKAO_APP_KEY_SET || typeof kakao === 'undefined'){
+    document.getElementById('map').innerText =
+      "카카오맵 표시 준비중 - head의 script src에 실제 앱키를 넣고 KAKAO_APP_KEY_SET을 true로 변경하세요.";
+    return;
+  }
+  kakao.maps.load(() => {
+    const container = document.getElementById('map');
+    if(!map){
+      map = new kakao.maps.Map(container, {
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 7
+      });
+    }
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    state.hospitals.forEach(h => {
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(h.lat, h.lng),
+        map
+      });
+      kakao.maps.event.addListener(marker, 'click', () => selectHospital(h.id));
+      markers.push(marker);
+      marker._hospitalId = h.id;
+    });
+  });
+}
+
+function highlightMarker(id){
+  if(!map) return;
+  const h = state.hospitals.find(x => x.id === id);
+  if(h) map.panTo(new kakao.maps.LatLng(h.lat, h.lng));
+}
+</script>
+</body>
+</html>

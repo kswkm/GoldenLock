@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>응급 이송 및 병원 매칭 시스템</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --primary: #38bdf8;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --green: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 12px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      user-select: none;
+    }
+
+    /* 상단 요약 바 */
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 14px 20px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .callsign { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+    .status-badge {
+      background: #0284c7;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    /* 메인 2열 그리드 (태블릿 최적화) */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* KTAS 중증도 선택 */
+    .triage-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .triage-btn {
+      padding: 14px 0;
+      font-size: 1.1rem;
+      font-weight: 800;
+      background: #0f172a;
+      border: 2px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .triage-btn.active {
+      background: var(--red);
+      border-color: #fca5a5;
+      color: #fff;
+    }
+
+    /* 바이탈 사인 입력 */
+    .vitals-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .vital-card {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .vital-label { font-size: 0.85rem; color: var(--text-dim); }
+    .vital-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    /* 질환/증상 태그 (원터치 필터) */
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      background: #334155;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .tag.selected {
+      background: #2563eb;
+      border-color: #60a5fa;
+    }
+
+    /* 병원 카드 */
+    .hospital-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hospital-card {
+      background: #0f172a;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hospital-card.recommended {
+      border-color: var(--green);
+    }
+    .h-info h3 { font-size: 1.2rem; margin-bottom: 4px; }
+    .h-badges { display: flex; gap: 6px; font-size: 0.8rem; font-weight: 600; }
+    .badge-eta { color: var(--primary); }
+    .badge-bed { color: var(--green); }
+
+    .btn-match {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn-match:active { background: #1d4ed8; }
+
+    /* 하단 고정 전송 버튼 */
+    .action-bar {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 12px;
+    }
+    .btn-action {
+      padding: 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-reset { background: #334155; color: #fff; }
+    .btn-send { background: var(--red); color: #fff; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="callsign">구급 101호기</div>
+    <div class="status-badge">환자 접촉 중</div>
+  </header>
+
+  <main class="dashboard">
+    <section class="panel">
+      <div class="panel-title">
+        <span>환자 상태 평가</span>
+        <span style="font-size: 0.9rem; color: var(--text-dim);">터치하여 변경</span>
+      </div>
+
+      <div>
+        <label class="vital-label" style="margin-bottom: 6px; display: block;">중증도 (KTAS)</label>
+        <div class="triage-grid">
+          <button class="triage-btn active" onclick="setKtas(this)">1</button>
+          <button class="triage-btn" onclick="setKtas(this)">2</button>
+          <button class="triage-btn" onclick="setKtas(this)">3</button>
+          <button class="triage-btn" onclick="setKtas(this)">4</button>
+          <button class="triage-btn" onclick="setKtas(this)">5</button>
+        </div>
+      </div>
+
+      <div class="vitals-grid">
+        <div class="vital-card">
+          <div class="vital-label">혈압 (BP)</div>
+          <input class="vital-input" type="text" value="120/80">
+        </div>
+        <div class="vital-card">
+          <div class="vital-label">맥박 (PR, bpm)</div>
+          <input class="vital-input" type="number" value="98">
+        </div>
+        <div class="vital-card">
+          <div class="vital-label">산소포화도 (SpO2, %)</div>
+          <input class="vital-input" type="number" value="96">
+        </div>
+        <div class="vital-card">
+          <div class="vital-label">호흡수 (RR, 회)</div>
+          <input class="vital-input" type="number" value="20">
+        </div>
+      </div>
+
+      <div>
+        <label class="vital-label" style="margin-bottom: 6px; display: block;">필요 전문 자원 선택</label>
+        <div class="tag-container">
+          <div class="tag selected" onclick="toggleTag(this)">심뇌혈관</div>
+          <div class="tag" onclick="toggleTag(this)">외상/수술</div>
+          <div class="tag" onclick="toggleTag(this)">응급투석</div>
+          <div class="tag" onclick="toggleTag(this)">소아응급</div>
+          <div class="tag" onclick="toggleTag(this)">중환자실</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span>실시간 이송 추천 병원</span>
+        <span style="font-size: 0.9rem; color: var(--green);">● 연동 완료</span>
+      </div>
+
+      <div class="hospital-list">
+        <div class="hospital-card recommended">
+          <div class="h-info">
+            <h3>대구권역응급의료센터</h3>
+            <div class="h-badges">
+              <span class="badge-eta">8분 거리 (3.2km)</span>
+              <span>•</span>
+              <span class="badge-bed">중환자실 가능</span>
+            </div>
+          </div>
+          <button class="btn-match" onclick="requestMatch('대구권역응급의료센터')">수용 요청</button>
+        </div>
+
+        <div class="hospital-card">
+          <div class="h-info">
+            <h3>지역응급의료센터 A</h3>
+            <div class="h-badges">
+              <span class="badge-eta">14분 거리 (5.8km)</span>
+              <span>•</span>
+              <span class="badge-bed">외상 수술실 대기</span>
+            </div>
+          </div>
+          <button class="btn-match" onclick="requestMatch('지역응급의료센터 A')">수용 요청</button>
+        </div>
+
+        <div class="hospital-card" style="opacity: 0.6;">
+          <div class="h-info">
+            <h3>종합병원 B</h3>
+            <div class="h-badges">
+              <span class="badge-eta">19분 거리 (8.0km)</span>
+              <span>•</span>
+              <span style="color: var(--red);">응급실 포화 (지연 가능)</span>
+            </div>
+          </div>
+          <button class="btn-match" onclick="requestMatch('종합병원 B')">수용 요청</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="action-bar">
+    <button class="btn-action btn-reset" onclick="resetForm()">초기화</button>
+    <button class="btn-action btn-send" onclick="broadcastAlert()">전체 상황실 즉각 공유</button>
+  </footer>
+
+  <script>
+    function setKtas(btn) {
+      document.querySelectorAll('.triage-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function toggleTag(tag) {
+      tag.classList.toggle('selected');
+    }
+
+    function requestMatch(hospitalName) {
+      alert(`[${hospitalName}]에 바이탈 정보 전송 및 수용 요청을 보냈습니다.`);
+    }
+
+    function broadcastAlert() {
+      alert("주변 3개 병원 및 응급의료통제 상황실로 중증 환자 데이터가 브로드캐스트되었습니다.");
+    }
+
+    function resetForm() {
+      if(confirm("입력값을 초기화하시겠습니까?")) {
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>

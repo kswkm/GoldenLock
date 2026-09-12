@@ -1,0 +1,32 @@
+{
+  "name": "@goldenlock/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "GoldenLock 원자적 자원 확약(Atomic Lock) 스마트 컨트랙트 (Hardhat 3)",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy:local": "hardhat run scripts/deploy.ts --network hardhatMainnet",
+    "deploy:amoy": "hardhat run scripts/deploy.ts --network polygonAmoy",
+    "deploy:arbitrumSepolia": "hardhat run scripts/deploy.ts --network arbitrumSepolia",
+    "ignition:local": "hardhat ignition deploy ignition/modules/GoldenLock.ts --network hardhatMainnet"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.0.0",
+    "@nomicfoundation/hardhat-ignition": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.7",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.12.12",
+    "chai": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "hardhat": "^3.0.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2",
+    "ethers": "^6.13.0"
+  }
+}

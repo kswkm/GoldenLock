@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GoldenLock 콘솔 — 병원-구급대 자원 락 시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css" />
+<!-- snarkjs는 UMD 번들이라 전역 스크립트로 로드 (브라우저에서 Groth16 증명 생성) -->
+<script src="https://cdn.jsdelivr.net/npm/snarkjs@0.7.5/build/snarkjs.min.js"></script>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── 상단 상태 바 ─────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div class="brand-text">
+        <h1>GoldenLock</h1>
+        <p>병원 자원 락 · ZK 증명 콘솔</p>
+      </div>
+    </div>
+
+    <nav class="modeselect" id="modeselect">
+      <button class="mode-btn active" data-view="ambulance">구급대 콘솔</button>
+      <button class="mode-btn" data-view="hospital">병원 콘솔</button>
+      <button class="mode-btn" data-view="monitor">관제 모니터</button>
+    </nav>
+
+    <div class="status-cluster">
+      <button class="led-btn" id="settingsBtn" title="연결 설정">
+        <span class="gear" aria-hidden="true"></span> 설정
+      </button>
+      <div class="led" id="relayLed" title="Relay Server 연결 상태">
+        <span class="dot"></span> Relay
+      </div>
+      <div class="led" id="chainLed" title="RPC / 지갑 연결 상태">
+        <span class="dot"></span> Chain
+      </div>
+      <button class="wallet-btn" id="walletBtn">지갑 연결</button>
+    </div>
+  </header>
+
+  <!-- ── 설정 패널 (기본 숨김) ────────────────────────────── -->
+  <div class="settings-panel hidden" id="settingsPanel">
+    <div class="settings-row">
+      <label>Relay Server URL</label>
+      <input type="text" id="cfgRelayUrl" placeholder="http://localhost:4000" />
+    </div>
+    <div class="settings-row">
+      <label>RPC URL</label>
+      <input type="text" id="cfgRpcUrl" placeholder="http://127.0.0.1:8545" />
+    </div>
+    <div class="settings-row">
+      <label>GoldenLock 컨트랙트 주소</label>
+      <input type="text" id="cfgContractAddr" placeholder="0x..." />
+    </div>
+    <div class="settings-row">
+      <label>AI Engine URL <span class="faint">(KTAS 자동 산출, 선택)</span></label>
+      <input type="text" id="cfgAiEngineUrl" placeholder="http://localhost:8000" />
+    </div>
+    <div class="settings-actions">
+      <button class="primary" id="cfgSaveBtn">저장하고 재연결</button>
+      <span class="hint">브라우저 localStorage에만 저장됩니다. 값을 비우면 config.js의 기본값을 사용합니다.</span>
+    </div>
+  </div>
+
+  <!-- ── 메인 콘텐츠 (뷰별 전환) ──────────────────────────── -->
+  <main id="viewRoot"></main>
+
+  <!-- ── 하단 이벤트 로그 트레이 ───────────────────────────── -->
+  <footer class="logtray">
+    <div class="logtray-head">
+      <h2>이벤트 로그</h2>
+      <span class="tag" id="logCount">0</span>
+      <button class="ghost-btn" id="logClearBtn">지우기</button>
+    </div>
+    <div class="logtray-body" id="logBody"></div>
+  </footer>
+
+</div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>

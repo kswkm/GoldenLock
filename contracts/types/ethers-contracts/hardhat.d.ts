@@ -11,22 +11,22 @@ import * as Contracts from "./index.js";
 declare module "@nomicfoundation/hardhat-ethers/types" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
   getContractFactory(name: 'GoldenLock', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.GoldenLock__factory>
-getContractFactory(name: 'Verifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.Verifier__factory>
+getContractFactory(name: 'MockVerifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.MockVerifier__factory>
 getContractFactory(name: 'MockVerifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.MockVerifier__factory>
 getContractFactory(name: 'IGroth16Verifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IGroth16Verifier__factory>
 
   getContractAt(name: 'GoldenLock', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.GoldenLock>
-getContractAt(name: 'Verifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.Verifier>
+getContractAt(name: 'MockVerifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.MockVerifier>
 getContractAt(name: 'MockVerifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.MockVerifier>
 getContractAt(name: 'IGroth16Verifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IGroth16Verifier>
 
   deployContract(name: 'GoldenLock', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.GoldenLock>
-deployContract(name: 'Verifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Verifier>
+deployContract(name: 'MockVerifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MockVerifier>
 deployContract(name: 'MockVerifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MockVerifier>
 deployContract(name: 'IGroth16Verifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IGroth16Verifier>
 
   deployContract(name: 'GoldenLock', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.GoldenLock>
-deployContract(name: 'Verifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Verifier>
+deployContract(name: 'MockVerifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MockVerifier>
 deployContract(name: 'MockVerifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MockVerifier>
 deployContract(name: 'IGroth16Verifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IGroth16Verifier>
 

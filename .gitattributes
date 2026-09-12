@@ -1,2 +1,0 @@
-ai-engine/data/ktas_train.csv filter=lfs diff=lfs merge=lfs -text
-ai-engine/data/ktas_test.csv filter=lfs diff=lfs merge=lfs -text

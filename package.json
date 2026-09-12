@@ -1,0 +1,12 @@
+{
+  "name": "goldenlock",
+  "private": true,
+  "version": "1.0.0",
+  "description": "GoldenLock 모노레포 진입점. 이 package.json 자체엔 의존성이 없다 — npm install 한 번으로 contracts/relay-server/zk-circuits 세 하위 프로젝트를 순서대로 설치해주는 역할만 한다.",
+  "scripts": {
+    "postinstall": "npm run setup",
+    "setup": "npm install --prefix contracts && npm install --prefix relay-server && npm install --prefix zk-circuits",
+    "test": "npm test --prefix contracts && npm test --prefix relay-server",
+    "compile": "npm run compile --prefix contracts"
+  }
+}

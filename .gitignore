@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+package-lock.json.bak
+
+# Build outputs
+dist/
+build/
+
+# Hardhat & Solidity artifacts
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS specific files
+.DS_Store
+Thumbs.db

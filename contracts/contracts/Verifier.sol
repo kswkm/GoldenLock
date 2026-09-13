@@ -13,7 +13,7 @@ import "./interfaces/IGroth16Verifier.sol";
  *
  * ⚠️ 프로덕션/실제 배포 전 반드시 zk-circuits에서 생성된 진짜 Verifier로 교체할 것.
  */
-contract MockVerifier is IGroth16Verifier {
+contract Verifier is IGroth16Verifier {
     /// @notice 데모 중 강제로 실패 케이스를 재현하고 싶을 때 사용하는 전역 스위치
     bool public forceInvalid;
 

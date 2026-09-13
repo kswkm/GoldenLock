@@ -15,7 +15,7 @@ export interface GoldenLock$Type {
   readonly deployedLinkReferences: {};
   readonly immutableReferences: {"3499":[{"length":32,"start":6125}],"3501":[{"length":32,"start":6312}],"3503":[{"length":32,"start":6071}],"3505":[{"length":32,"start":6204}],"3507":[{"length":32,"start":6242}],"3510":[{"length":32,"start":1250}],"3513":[{"length":32,"start":1291}]};
   readonly inputSourceName: "project/contracts/GoldenLock.sol";
-  readonly buildInfoId: "solc-0_8_24-dab33e58846483a40ce0819da318e041a55bf1c2";
+  readonly buildInfoId: "solc-0_8_24-2ec4a0dac5d5e4c04e5bb9e028d5d150788474f8";
 };
 
 import "hardhat/types/artifacts";

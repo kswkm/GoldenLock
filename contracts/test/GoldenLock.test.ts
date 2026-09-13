@@ -119,7 +119,7 @@ describe("GoldenLock", function () {
         goldenLock
           .connect(ambulance)
           .requestAndLock(hospital.address, ambulance.address, 1, requestHash, dummyProof.a, dummyProof.b, dummyProof.c, publicSignals, "0x")
-      ).to.be.revertedWith("hospital cannot accept resource");
+      ).to.be.revertedWith("ZK proof invalid: resource not confirmed");
     });
   });
 

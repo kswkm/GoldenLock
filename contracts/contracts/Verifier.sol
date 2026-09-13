@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "./interfaces/IGroth16Verifier.sol";
 
 /**
- * @title MockVerifier
+ * @title Verifier
  * @notice zk-circuits에서 생성된 실제 Verifier.sol이 나오기 전까지
  *         GoldenLock.sol / relay-server를 독립적으로 개발·테스트하기 위한 더미 검증기.
  *
